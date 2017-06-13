@@ -18,6 +18,7 @@
 import importlib
 import os
 import glob
+import shutil
 
 from . import persistence
 from .mixins import LoggingMixin, TimerMixin
@@ -293,24 +294,12 @@ class ProcessManager(LoggingMixin, TimerMixin):
         else:
             # use default directory if chain not specified
             chain = 'default'
-
         # get chain path and set link of latest data
         base_path = persistence.io_dir('proc_service_data', io_conf)
         chain_path = os.path.join(base_path,chain)
-        # chain_path = '{0:s}/{1:s}'.format(base_path, chain)
         persistence.create_dir(chain_path)
         self.log().debug('Persisting process services in %s', chain_path)
-        try:
-            # remove old symlink
-            os.remove('{}/latest'.format(base_path))
-        except:
-            pass
-        try:
-            # create new symlink
-            os.symlink(chain, '{}/latest'.format(base_path))
-        except Exception as exc:
-            self.log().critical('Unable to create symlink to latest version of services: "%s/latest"', base_path)
-            raise exc
+
 
         # remove old data
         serv_paths = glob.glob('{}/*.pkl'.format(chain_path))
@@ -324,6 +313,26 @@ class ProcessManager(LoggingMixin, TimerMixin):
         # persist services
         for cls in self.get_services():
             self.service(cls).persist_in_file('{0:s}/{1:s}.pkl'.format(chain_path, str(cls)))
+
+        try:
+            # remove old symlink
+            os.remove(os.path.join(base_path, 'latest'))
+        except:
+            try:
+                # Windows require admin privileges to create symlinks, so we copy (and remove) the whole directory instead
+                shutil.rmtree(os.path.join(base_path, 'latest'))
+            except:
+                pass
+        try:
+            # create new symlink
+            os.symlink(chain, os.path.join(base_path, 'latest'))
+        except:
+            try:
+                shutil.copytree(chain_path, os.path.join(base_path, 'latest'))
+            except Exception as exc:
+                self.log().critical('Unable to create both symlink and copy to latest version of services: "%s"',
+                                    os.path.join(base_path, 'latest'))
+                raise exc
 
     def execute_macro(self, filename, copyfile=True):
         """Execute an input python configuration file

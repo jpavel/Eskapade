@@ -195,10 +195,10 @@ class ConfigObject(ProcessService, dict):
 
         # initialize file I/O paths with repository directories with repo root from environment
         self['esRoot'] = eskapade.utils.get_dir_path('es_root')
-        root_path = self['esRoot'] + ('/' if self['esRoot'] and self['esRoot'][-1] != '/' else '')
+        root_path = self['esRoot']
         for subdir in ['results', 'data', 'templates']:
-            self['{}Dir'.format(subdir)] = root_path + subdir
-        self['macrosDir'] = root_path + 'tutorials'
+            self['{}Dir'.format(subdir)] = os.path.join(root_path, subdir)
+        self['macrosDir'] = os.path.join(root_path, 'tutorials')
 
     def io_base_dirs(self):
         """Get configured base directories

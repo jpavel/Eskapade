@@ -25,13 +25,13 @@ IO_LOCS = dict(results='results_dir', data='data_dir', macros='macros_dir', inpu
                records='data_dir', ana_results='results_dir', ana_plots='results_dir', proc_service_data='results_dir',
                results_data='results_dir', results_ml_data='results_dir', results_config='results_dir',
                tmva='results_dir', plots='results_dir', templates='templates_dir')
-IO_SUB_DIRS = defaultdict(lambda: '', ana_results='{ana_name:s}', ana_plots='{ana_name:s}/plots',
-                          proc_service_data='{ana_name:s}/proc_service_data/v{ana_version:s}',
-                          results_data='{ana_name:s}/data/v{ana_version:s}',
-                          results_ml_data='{ana_name:s}/data/v{ana_version:s}',
-                          results_config='{ana_name:s}/config/v{ana_version:s}',
-                          tmva='{ana_name:s}/tmva_output/v{ana_version:s}',
-                          plots='{ana_name:s}/plots/v{ana_version:s}')
+IO_SUB_DIRS = defaultdict(lambda: '', ana_results='{ana_name:s}', ana_plots=os.path.join('{ana_name:s}', 'plots'),
+                          proc_service_data=os.path.join('{ana_name:s}', 'proc_service_data', 'v{ana_version:s}'),
+                          results_data=os.path.join('{ana_name:s}', 'data', 'v{ana_version:s}'),
+                          results_ml_data=os.path.join('{ana_name:s}', 'data', 'v{ana_version:s}'),
+                          results_config=os.path.join('{ana_name:s}', 'config', 'v{ana_version:s}'),
+                          tmva=os.path.join('{ana_name:s}', 'tmva_output', 'v{ana_version:s}'),
+                          plots=os.path.join('{ana_name:s}', 'plots', 'v{ana_version:s}'))
 
 # get logging instance
 log = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ def io_dir(io_type, io_conf):
     base_dir = io_conf[IO_LOCS[io_type]]
     sub_dir = IO_SUB_DIRS[io_type].format(ana_name=repl_whites(io_conf['analysis_name']),
                                           ana_version=repl_whites(str(io_conf['analysis_version'])))
-    dir_path = base_dir + ('/' if sub_dir else '') + sub_dir
+    dir_path = os.path.join(base_dir, sub_dir)
 
     # create and return directory path
     create_dir(dir_path)
