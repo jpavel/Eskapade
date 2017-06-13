@@ -296,7 +296,8 @@ class ProcessManager(LoggingMixin, TimerMixin):
 
         # get chain path and set link of latest data
         base_path = persistence.io_dir('proc_service_data', io_conf)
-        chain_path = '{0:s}/{1:s}'.format(base_path, chain)
+        chain_path = os.path.join(base_path,chain)
+        # chain_path = '{0:s}/{1:s}'.format(base_path, chain)
         persistence.create_dir(chain_path)
         self.log().debug('Persisting process services in %s', chain_path)
         try:
